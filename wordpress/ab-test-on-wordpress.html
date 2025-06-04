@@ -1,4 +1,10 @@
-/**
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>PostHog A/B Test</title>
+    <script type="text/javascript">
+        /**
  * PostHog A/B Test Snippet for WordPress (and other JS environments)
  *
  * This script enables A/B testing by dynamically applying CSS changes to elements
@@ -147,3 +153,27 @@ const evaluateTestGroup = () => {
 
 // Initialize the A/B test evaluation.
 evaluateTestGroup();
+    </script>
+</head>
+<body>
+    <p>This page includes an A/B testing script powered by PostHog.</p>
+    <p>The A/B test variations will modify elements on this page based on feature flags or URL parameters.</p>
+    <p>Inspect the console for logs from the A/B testing script.</p>
+
+    <!-- Example elements for testing variations -->
+    <div id="original-banner" style="padding: 10px; background-color: lightblue; margin-bottom: 10px;">
+        This is the original banner (control).
+    </div>
+
+    <div id="new-feature-banner" style="padding: 10px; background-color: lightgreen; margin-bottom: 10px; display: none;">
+        This is the new feature banner (test variant).
+    </div>
+
+    <h1 id="hero-title">Original Hero Title</h1>
+
+    <button class="main-cta-button" style="padding: 10px 15px; background-color: dodgerblue; color: white; border: none;">
+        Click Me!
+    </button>
+
+</body>
+</html>
