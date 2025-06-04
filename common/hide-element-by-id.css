@@ -1,0 +1,9 @@
+/*
+  Simple CSS snippet to hide an HTML element by its ID.
+  Replace '#element-to-hide' with the actual ID of the element you want to hide.
+  The `!important` flag is used to increase specificity and help ensure the style is applied,
+  but use it judiciously as it can make debugging CSS more complex.
+*/
+#element-to-hide {
+  display: none !important;
+}

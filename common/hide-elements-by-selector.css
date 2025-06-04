@@ -1,0 +1,9 @@
+/*
+  Simple CSS snippet to hide HTML elements matching a given CSS selector.
+  Replace '.your-css-selector-here' with the actual CSS selector for the elements
+  you want to hide (e.g., '.control-group-items', 'div.old-feature').
+  The `!important` flag is used to increase specificity.
+*/
+.your-css-selector-here {
+  display: none !important;
+}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Test Example Page</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .content-section { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .content-section h2 { margin-top: 0; }
+        /* Initially hide all testable sections to prevent flicker before script runs */
+        /* The script will then unhide the correct one. */
+        #control-group, #Heading-test1, #Heading-test2 { display: none; }
+    </style>
+
+    <!--
+      IMPORTANT: PostHog SDK
+      For this example to work with PostHog feature flags, you need to:
+      1. Include your PostHog SDK initialization snippet here.
+         Get it from your PostHog Project Settings.
+      2. Ensure the `testSlug` in the script below matches a feature flag key in your project.
+      3. Configure that feature flag with variants: 'control', 'test_group_1', 'test_group_2'.
+
+      Example PostHog init (replace with your actual snippet):
+      <script>
+        // !function(t,e){ ... }(document,window.posthog||[]);
+        // posthog.init('YOUR_API_KEY', { api_host: 'YOUR_POSTHOG_HOST' });
+      </script>
+    -->
+</head>
+<body>
+
+    <h1>Experiment Test Page</h1>
+    <p>This page demonstrates an A/B test controlled by the script below.</p>
+    <p>
+        You can force a variation by adding a URL parameter. For example:
+        <ul>
+            <li><code>?001-about-page-Heading-test=control</code></li>
+            <li><code>?001-about-page-Heading-test=test_group_1</code></li>
+            <li><code>?001-about-page-Heading-test=test_group_2</code></li>
+        </ul>
+        If no URL parameter is present, the script will try to use PostHog feature flags.
+    </p>
+
+    <div id="control-group" class="content-section">
+        <h2>Control Group Content</h2>
+        <p>This is the original content visible to the control group.</p>
+        <button>Original Button</button>
+    </div>
+
+    <div id="Heading-test1" class="content-section">
+        <h2>Test Group 1: New Heading!</h2>
+        <p>This content is shown to users in 'test_group_1'. It has a different heading.</p>
+        <button>New Button Alpha</button>
+    </div>
+
+    <div id="Heading-test2" class="content-section">
+        <h2>Test Group 2: Alternative Heading!</h2>
+        <p>This content is shown to users in 'test_group_2'. It features another heading variation.</p>
+        <button>Alternative Button Beta</button>
+    </div>
+
+    <hr>
+    <p><em>If you see this message and no content sections above, ensure JavaScript is enabled and check the browser console for errors. The A/B test script might not have loaded or executed correctly. If PostHog is not integrated, use the URL parameters to test.</em></p>
+
+    <script>
+        // A/B Test Script (adapted from wordpress/ab-test-on-wordpress.js)
+        // =============================================================================
+        // START USER CONFIGURATION
+        const testSlug = '001-about-page-Heading-test'; // Matches a PostHog feature flag key
+
+        const variations = {
+          'control': [{
+              selector: '#control-group',
+              updates: {style: {display: 'block'}}
+            }, {
+              selector: '#Heading-test1',
+              updates: {style: {display: 'none'}}
+            }, {
+              selector: '#Heading-test2',
+              updates: {style: {display: 'none'}}
+            }
+          ],
+          'test_group_1': [{
+              selector: '#control-group',
+              updates: {style: {display: 'none'}}
+            }, {
+              selector: '#Heading-test1',
+              updates: {style: {display: 'block'}}
+            }, {
+              selector: '#Heading-test2',
+              updates: {style: {display: 'none'}}
+            }
+          ],
+          'test_group_2': [{
+              selector: '#control-group',
+              updates: {style: {display: 'none'}}
+            }, {
+              selector: '#Heading-test2',
+              updates: {style: {display: 'block'}}
+            }, {
+              selector: '#Heading-test1',
+              updates: {style: {display: 'none'}}
+            }
+          ]
+        };
+        // END USER CONFIGURATION
+        // =============================================================================
+
+        const applyUpdates = (selector, updates) => {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length === 0) {
+            console.warn(`A/B Test Example: No elements found for selector '${selector}'.`);
+            return;
+          }
+          elements.forEach((element) => {
+            Object.entries(updates).forEach(([key, value]) => {
+              if (key === 'style' && typeof value === 'object') {
+                Object.entries(value).forEach(([styleKey, styleValue]) => {
+                  element.style[styleKey] = styleValue;
+                });
+              } else {
+                try {
+                  element[key] = value;
+                } catch (e) {
+                  console.error(`A/B Test Example: Error setting property '${key}' on selector '${selector}'.`, e);
+                }
+              }
+            });
+          });
+        };
+
+        const applyVariantConfig = (variantKey) => {
+          if (!variations[variantKey]) {
+            console.warn(`A/B Test Example: Variant key '${variantKey}' not found. Applying 'control'.`);
+            variantKey = 'control';
+          }
+
+          // Ensure all managed elements are hidden before applying the active one to prevent flicker or multiple sections showing.
+          Object.keys(variations).forEach(vKey => {
+              variations[vKey].forEach(config => {
+                  // This is a simplistic approach; assumes all selectors are for top-level containers.
+                  // A more robust way would be to tag all elements involved in the test with a common class.
+                  if (config.updates.style && config.updates.style.display !== undefined) {
+                      const elementsToHide = document.querySelectorAll(config.selector);
+                      elementsToHide.forEach(el => el.style.display = 'none');
+                  }
+              });
+          });
+
+
+          const config = variations[variantKey];
+          if (config) {
+            config.forEach(({ selector, updates }) => {
+              applyUpdates(selector, updates);
+            });
+            console.log(`A/B Test Example: Group "${variantKey}" activated.`);
+            // Announce the active variant for visibility
+            const announcementEl = document.getElementById('active-variant-announcement');
+            if (announcementEl) {
+                announcementEl.textContent = `Active Variant: ${variantKey}`;
+            } else {
+                const p = document.createElement('p');
+                p.id = 'active-variant-announcement';
+                p.textContent = `Active Variant: ${variantKey}`;
+                document.body.insertBefore(p, document.querySelector('hr'));
+            }
+
+          } else {
+            console.error(`A/B Test Example: No configuration for variant '${variantKey}'.`);
+          }
+        };
+
+        const getQueryParamByKey = (key) => new URLSearchParams(window.location.search).get(key);
+
+        const evaluateTestGroup = () => {
+          try {
+            let groupValueQueryParam = getQueryParamByKey(testSlug);
+
+            if (groupValueQueryParam && variations.hasOwnProperty(groupValueQueryParam)) {
+              console.log(`A/B Test Example: Forcing group '${groupValueQueryParam}' from URL parameter.`);
+              applyVariantConfig(groupValueQueryParam);
+            } else {
+              if (typeof posthog === 'undefined' || typeof posthog.onFeatureFlags !== 'function') {
+                console.warn("A/B Test Example: PostHog SDK not found or onFeatureFlags not available. Applying 'control'. Use URL params to test variants.");
+                applyVariantConfig('control'); // Default to 'control'
+                return;
+              }
+              posthog.onFeatureFlags(() => {
+                const flagValue = posthog.getFeatureFlag(testSlug);
+                if (variations.hasOwnProperty(flagValue)) {
+                  console.log(`A/B Test Example: Applying group '${flagValue}' from feature flag.`);
+                  applyVariantConfig(flagValue);
+                } else {
+                  console.log(`A/B Test Example: Feature flag '${testSlug}' not set or variant '${flagValue}' not recognized. Applying 'control'.`);
+                  applyVariantConfig('control'); // Default to 'control'
+                }
+              });
+            }
+          } catch (error) {
+            console.error("A/B Test Example: Error evaluating test group. Applying 'control'.", error);
+            applyVariantConfig('control');
+          }
+        };
+
+        // Wait for the DOM to be fully loaded before executing the script
+        document.addEventListener('DOMContentLoaded', () => {
+            evaluateTestGroup();
+        });
+    </script>
+
+</body>
+</html>
