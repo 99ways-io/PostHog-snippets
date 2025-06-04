@@ -179,15 +179,4 @@ function processAndReportEvent(event) {
 }
 
 // Subscribe to all standard Shopify customer events
-if (typeof analytics !== 'undefined' && typeof analytics.subscribe === 'function') {
-  analytics.subscribe("all_standard_events", (event) => {
-    if (event) { // Basic check to ensure event object is passed
-      processAndReportEvent(event);
-    } else {
-      console.warn('PostHog Shopify: Received an undefined event from analytics.subscribe.');
-    }
-  });
-  console.log('PostHog Shopify: Subscribed to all_standard_events.');
-} else {
-  console.error('PostHog Shopify: Shopify `analytics` object not found or `analytics.subscribe` is not a function. PostHog event tracking will not work.');
-}
+analytics.subscribe("all_standard_events", (event) => processAndReportEvent(event));
