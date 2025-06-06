@@ -1,0 +1,111 @@
+<script>
+// Variation definition
+const testSlug = '**FEATURE FLAG KEY**';
+
+const variations = {
+  'control': [], // ALWAYS keep the control key as 'control'
+  'test_group_1': [
+    {
+      selector: '**CONTROL_CSS_ID**',
+      updates: {style: {display: 'none'}}
+    },
+    {
+      selector: '**TG1_CSS_ID**',
+      updates: {style: {display: 'block'}}
+    }
+  ],
+  'test_group_2': [
+    {
+      selector: '**CONTROL_CSS_ID**',
+      updates: {style: {display: 'none'}}
+    },
+    {
+      selector: '**TG2_CSS_ID**',
+      updates: {style: {display: 'block'}}
+    }
+  ]
+};
+
+
+
+// Utility functions
+
+const applyUpdates = (selector, updates) => {
+
+  const elements = document.querySelectorAll(selector);
+
+
+
+  elements.forEach((element) => {
+
+    Object.entries(updates).forEach(([key, value]) => {
+
+      if (typeof value === 'object' && !Array.isArray(value)) {
+
+        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+
+          element[key][nestedKey] = nestedValue;
+
+        });
+
+      } else {
+
+        element[key] = value;
+
+      }
+
+    });
+
+  });
+
+};
+
+
+
+const applyVariantConfig = (variant) => {
+
+  const config = variations[variant];
+  config.forEach(({ selector, updates }) => {
+    applyUpdates(selector, updates);
+  });
+  console.log(`Test group "${variant}" activated`);
+
+};
+
+
+
+// Retrieve query parameter value by its key
+
+const getQueryParamByKey = (key) => new URLSearchParams(window.location.search).get(key);
+
+
+
+// Determine and apply visibility of variants based on URL parameter or feature flag
+
+const evaluateTestGroup = (variations, testSlug) => {
+
+  let groupValue = getQueryParamByKey(testSlug);
+
+  if (!groupValue) {
+    posthog.onFeatureFlags(() => {
+      const flagValue = posthog.getFeatureFlag(testSlug);
+      
+      if (variations.hasOwnProperty(flagValue)) {
+        groupValue = flagValue;
+        applyVariantConfig(groupValue);
+      } else {
+        console.log("Test not started yet, showing control.");
+      }
+
+    });
+
+  } else {
+    applyVariantConfig(groupValue);
+  }
+
+};
+
+
+ evaluateTestGroup(variations, testSlug);
+  
+</script>
