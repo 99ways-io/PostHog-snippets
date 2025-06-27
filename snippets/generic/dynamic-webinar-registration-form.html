@@ -78,100 +78,98 @@
 			return forcedWebinarID;
 		}
 
+    // Default or dynamically assigned webinar ID. Replace "zHOhTs" or implement logic as needed.
     var assignedWebinarID = "zHOhTs";
 
 		if (assignedWebinarID) {
-      console.log("Live webinar id is:",assignedWebinarID);
 			return assignedWebinarID;
 		} else {
-      console.log("Fallback webinar id is:",fallbackWebinarID);
       return fallbackWebinarID;
 		}
 	
 	};
 	
+  // Fetches webinar information, specifically upcoming times.
 	function get_webinar_info(webinar_short_id) {
-		const request_info = new XMLHttpRequest();
+		// const request_info = new XMLHttpRequest(); // XMLHttpRequest is not used here.
 
 		const url_get_webinar_info = 'https://api.joinnow.live/webinars/'+webinar_short_id+'/registration-information';
 		
 		fetch(url_get_webinar_info).then(response => {
 			if (!response.ok) {
-				throw new Error('Network response was not ok');
+				throw new Error('Network response was not ok for webinar info.');
 			}
 			return response.json();
 		})
 		.then(data => {
-			set_webinar_time(data['upcoming_times'][0]);
+      if (data && data['upcoming_times'] && data['upcoming_times'].length > 0) {
+        set_webinar_time(data['upcoming_times'][0]); // Sets to the first upcoming time.
+      } else {
+        console.warn('No upcoming times found for webinar:', webinar_short_id);
+        // Handle cases where no upcoming times are available, e.g., by disabling the form or showing a message.
+      }
 			set_webinar_id(webinar_short_id);
-
 		})
-		.catch(error => {console.error('Error fetching webinar times:', error);});
-
+		.catch(error => {console.error('Error fetching webinar times for ID ' + webinar_short_id + ':', error);});
 	};
 	
+  // Sets the value of the hidden schedule_id input field.
 	function set_webinar_time(webinarTime) {
-            
             if(webinarTimeField) {
-                webinarTimeField.value = webinarTime; // Update the src attribute of iframe with new URL
+                webinarTimeField.value = webinarTime;
             } else {
-                console.error("webinarTimeField not found");
+                console.error("webinarTimeField (schedule_id input) not found in the DOM.");
             }
-	
 	};
 	
-	function set_webinar_id(webinarId) {
-	            
+  // Sets the value of the hidden webinar_id input field.
+	function set_webinar_id(webinarIdValue) {
             if(webinarIdField) {
-                webinarIdField.value = webinarId; // Update the src attribute of iframe with new URL
+                webinarIdField.value = webinarIdValue;
             } else {
-                console.error("webinarIdField not found");
+                console.error("webinarIdField (webinar_id input) not found in the DOM.");
             }
-	
 	};
 
-  function syncPH(webinarId,name,email,startTime) {	
-
+  // Sends webinar registration data to PostHog.
+  function syncPH(webinarIdValue,name,email,startTime) {
 			posthog.capture(
 				'webinar-registered', 
 				{
 					name: name,
 					email: email,
-					webinar_start_time: startTime, // Assuming you want to capture this based on your form structure
-					webinar_id: webinarId,
-					$set : {name: name, email: email, webinar_start_time: startTime, webinar_id: webinarId},
-					$set_once : {initial_name: name, initial_email: email, initial_webinar_start_time: startTime, initial_webinar_id: webinarId}
+					webinar_start_time: startTime,
+					webinar_id: webinarIdValue,
+					$set : {name: name, email: email, webinar_start_time: startTime, webinar_id: webinarIdValue}, // Sets user properties
+					$set_once : {initial_name: name, initial_email: email, initial_webinar_start_time: startTime, initial_webinar_id: webinarIdValue} // Sets user properties only once
 				}
 				);
 		};
 
-
+  // Handles the form submission for webinar registration.
 	function registerWebinar(event) {
-    console.log("Starting");
-		event.preventDefault();
+		event.preventDefault(); // Prevent default form submission
 		const firstName = document.getElementById('fname_form').value;
 		const eMail = document.getElementById('email_form').value;
 		const selectedTime = document.getElementById('schedule_id').value;
-		const webinarId = document.getElementById('webinar_id').value;
-    console.log(webinarId,selectedTime);
-		// Log the values to the console
-		//console.log("First Name:", firstName);
-		//console.log("Email:", eMail);
-		//console.log("Selected Time:", selectedTime);
-		//console.log("Selected webinar:", webinarId);
+		const webinarIdValue = document.getElementById('webinar_id').value;
     
-    posthog.identify(eMail);
-    
-    syncPH(webinarId,firstName,eMail,selectedTime);
+    // Identify the user in PostHog and send event data
+    if (typeof posthog !== 'undefined') {
+        posthog.identify(eMail);
+        syncPH(webinarIdValue, firstName, eMail, selectedTime);
+    } else {
+        console.warn("PostHog SDK not found. Cannot identify user or send webinar registration event to PostHog.");
+    }
 
 		const postData = JSON.stringify({
-			start_time: (selectedTime!="undefined")?selectedTime:(new Date(new Date().getTime() + 1000*30)).toISOString(),
+			start_time: (selectedTime && selectedTime !== "undefined") ? selectedTime : (new Date(new Date().getTime() + 1000*30)).toISOString(),
 			name: firstName,
 			email: eMail,
-      timezone: "America/New_York"
-
+      timezone: "America/New_York" // Consider making timezone dynamic or configurable if needed
 		});
-		fetch(`https://api.joinnow.live/webinars/${webinarId}/registration`, {
+
+		fetch(`https://api.joinnow.live/webinars/${webinarIdValue}/registration`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

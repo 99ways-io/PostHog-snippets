@@ -1,27 +1,46 @@
-<script>
 // Variation definition
-const testSlug = '**FEATURE FLAG KEY**';
+const testSlug = '001-about-page-Heading-test';
 
 const variations = {
-  'control': [], // ALWAYS keep the control key as 'control'
-  'test_group_1': [
+  'control': [{
+      selector: '#control-group',
+      updates: {style: {display: 'block'}}
+    },
     {
-      selector: '**CONTROL_CSS_ID**',
+      selector: '#Heading-test1',
       updates: {style: {display: 'none'}}
     },
     {
-      selector: '**TG1_CSS_ID**',
+      selector: '#Heading-test2',
+      updates: {style: {display: 'none'}}
+    }
+], // ALWAYS keep the control key as 'control'
+  'test_group_1': [
+    {
+      selector: '#control-group',
+      updates: {style: {display: 'none'}}
+    },
+    {
+      selector: '#Heading-test1',
       updates: {style: {display: 'block'}}
+    },
+    {
+      selector: '#Heading-test2',
+      updates: {style: {display: 'none'}}
     }
   ],
   'test_group_2': [
     {
-      selector: '**CONTROL_CSS_ID**',
+      selector: '#control-group',
       updates: {style: {display: 'none'}}
     },
     {
-      selector: '**TG2_CSS_ID**',
+      selector: '#Heading-test2',
       updates: {style: {display: 'block'}}
+    },
+    {
+      selector: '#Heading-test1',
+      updates: {style: {display: 'none'}}
     }
   ]
 };
@@ -107,5 +126,3 @@ const evaluateTestGroup = (variations, testSlug) => {
 
 
  evaluateTestGroup(variations, testSlug);
-  
-</script>
