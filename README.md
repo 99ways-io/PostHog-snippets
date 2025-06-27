@@ -6,16 +6,20 @@ These snippets are designed to be easily customizable and can be adapted to fit 
 
 ## Repository Structure
 
-The snippets in this repository are organized as individual files. Each filename clearly indicates:
+The snippets in this repository are organized into a hierarchical directory structure:
 
-*   **The platform** it's intended for (e.g., `Clickfunnels`, `Shopify`, `WordPress`).
-*   **The functionality** it provides (e.g., `AB test`, `Install PostHog`, `Dynamic Webinar Registration Form`).
+*   **Platform-specific snippets** are located in directories named after the platform (e.g., `clickfunnels/`, `shopify/`, `wordpress/`).
+    *   Within each platform directory, snippets are further categorized by functionality (e.g., `ab-testing/`, `install-posthog/`).
+    *   For example, the A/B testing snippet for Clickfunnels is now at `clickfunnels/ab-testing/AB test on Clickfunnels.html`.
+*   **General CSS utility snippets** are in the `css/` directory (e.g., `css/Hiding Variants.css`).
+*   **Form-related snippets** can be found in the `forms/` directory (e.g., `forms/Dynamic Webinar Registration Form`).
+*   **Test pages or examples** are located in the `testing/` directory (e.g., `testing/Experiment Test Page.html`).
 
-There are no subdirectories; all snippets are located in the root of the repository.
+This structure helps in easily locating snippets based on the platform and their purpose.
 
 ## How to Use
 
-1.  **Find the snippet:** Locate the file corresponding to your platform and desired functionality.
+1.  **Find the snippet:** Navigate to the appropriate directory based on the platform and functionality you need. For example, to find an A/B testing snippet for Shopify, look in `shopify/ab-testing/`.
 2.  **Copy the code:** Open the file and copy the entire code snippet.
 3.  **Customize (if necessary):**
     *   Many snippets require you to replace placeholder values. These are usually indicated with asterisks (e.g., `******************************************`) or descriptive terms in uppercase (e.g., `**FEATURE FLAG KEY**`, `**CONTROL_CSS_ID**`).
@@ -27,7 +31,7 @@ There are no subdirectories; all snippets are located in the root of the reposit
 
 ### A/B Testing Snippets
 
-These snippets (e.g., `AB test on Clickfunnels`) allow you to run A/B tests using PostHog feature flags.
+These snippets (e.g., `clickfunnels/ab-testing/AB test on Clickfunnels.html`) allow you to run A/B tests using PostHog feature flags.
 
 *   **Prerequisites:**
     *   A PostHog account with feature flags set up for your A/B test variations.
@@ -43,7 +47,7 @@ These snippets (e.g., `AB test on Clickfunnels`) allow you to run A/B tests usin
 
 ### PostHog Installation Snippets
 
-These snippets (e.g., `Install PostHog on Shopify`) are the basic PostHog JavaScript SDK setup.
+These snippets (e.g., `shopify/install-posthog/Install PostHog on Shopify`) are the basic PostHog JavaScript SDK setup.
 
 *   **Prerequisites:**
     *   A PostHog account.
