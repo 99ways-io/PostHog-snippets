@@ -1,8 +1,17 @@
 # PostHog Snippets
 
-This repository contains a collection of code snippets to help you integrate PostHog analytics and implement A/B testing on various platforms. PostHog is an open-source product analytics platform that helps you understand your users and build better products.
+This repository contains a collection of production-ready code snippets to help you integrate PostHog analytics and implement A/B testing on various platforms. PostHog is an open-source product analytics platform that helps you understand your users and build better products.
 
-These snippets are designed to be easily customizable and can be adapted to fit your specific needs.
+## Quick Start
+
+1. **Install PostHog**: Copy the installation snippet for your platform
+2. **Configure**: Replace `YOUR_POSTHOG_PROJECT_API_KEY` with your actual API key
+3. **Set up A/B testing**: Copy the A/B testing snippet and configure your feature flag
+4. **Test**: Use the interactive demo to validate your setup
+
+## Demo
+
+Check out the [interactive demo](demo/interactive-demo.html) to test configurations and see how the snippets work before implementing them on your site.
 
 ## Repository Structure
 
