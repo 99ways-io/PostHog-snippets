@@ -1,26 +1,26 @@
 <script>
 // Variation definition
-const testSlug = '**FEATURE FLAG KEY**';
+const testSlug = 'YOUR_FEATURE_FLAG_KEY';
 
 const variations = {
   'control': [], // ALWAYS keep the control key as 'control'
   'test_group_1': [
     {
-      selector: '**CONTROL_CSS_ID**',
+      selector: '#original-element',
       updates: {style: {display: 'none'}}
     },
     {
-      selector: '**TG1_CSS_ID**',
+      selector: '#variant-one-element',
       updates: {style: {display: 'block'}}
     }
   ],
   'test_group_2': [
     {
-      selector: '**CONTROL_CSS_ID**',
+      selector: '#original-element',
       updates: {style: {display: 'none'}}
     },
     {
-      selector: '**TG2_CSS_ID**',
+      selector: '#variant-two-element',
       updates: {style: {display: 'block'}}
     }
   ]
