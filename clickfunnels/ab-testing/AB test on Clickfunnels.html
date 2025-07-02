@@ -1,79 +1,138 @@
 <script>
+// --- Configuration for A/B Testing ---
+
 // Variation definition
+// The `testSlug` is the key used to identify this specific A/B test or feature flag in PostHog.
+// Replace 'YOUR_FEATURE_FLAG_KEY' with the actual key from your PostHog project.
 const testSlug = 'YOUR_FEATURE_FLAG_KEY';
 
+// The `variations` object defines the different versions of the page for the A/B test.
+// Each key in this object represents a variant group (e.g., 'control', 'test_group_1').
+// - 'control': This is the original version of the page. It's crucial to keep this key named 'control'.
+//   It typically has an empty array, meaning no changes are applied.
+// - Other keys (e.g., 'test_group_1', 'test_group_2'): These represent the different test variations.
+//   Each variation is an array of objects, where each object specifies:
+//     - `selector`: A CSS selector for the HTML element(s) to be modified.
+//     - `updates`: An object describing the changes to apply to the selected element(s).
+//       - `style`: An object for CSS style changes (e.g., `display: 'none'` to hide, `display: 'block'` to show).
+//       - Other properties can be set directly (e.g., `innerText: 'New Text'`, `innerHTML: '<span>New HTML</span>'`).
+//       - Attributes can be set using `setAttribute` (e.g., `href: 'new-link'`).
 const variations = {
   'control': [], // ALWAYS keep the control key as 'control'
   'test_group_1': [
     {
-      selector: '#original-element',
+      selector: '#original-element', // Example: Hide the original element
       updates: {style: {display: 'none'}}
     },
     {
-      selector: '#variant-one-element',
+      selector: '#variant-one-element', // Example: Show the first variant element
       updates: {style: {display: 'block'}}
     }
   ],
   'test_group_2': [
     {
-      selector: '#original-element',
+      selector: '#original-element', // Example: Hide the original element
       updates: {style: {display: 'none'}}
     },
     {
-      selector: '#variant-two-element',
+      selector: '#variant-two-element', // Example: Show the second variant element
       updates: {style: {display: 'block'}}
     }
   ]
 };
 
 
+// --- A/B Testing Utility Functions ---
 
-// Utility functions
+/**
+ * Applies specified updates to all DOM elements matching a given CSS selector.
+ * @param {string} selector - The CSS selector for the target element(s).
+ * @param {object} updates - An object defining the modifications to apply.
+ *                           Can include style changes, innerText, innerHTML, or attributes.
+ */
 const applyUpdates = (selector, updates) => {
   const elements = document.querySelectorAll(selector);
   elements.forEach((element) => {
     Object.entries(updates).forEach(([key, value]) => {
-      if (typeof value === 'object' && !Array.isArray(value)) {
+      if (typeof value === 'object' && !Array.isArray(value)) { // Handles nested objects like 'style'
         Object.entries(value).forEach(([nestedKey, nestedValue]) => {
           element[key][nestedKey] = nestedValue;
         });
-      } else if (['innerText','innerHTML'].includes(key)) {
+      } else if (['innerText','innerHTML'].includes(key)) { // Handles direct text/HTML updates
         element[key]= value;
-        console.log(element);
-        console.log(key,value);
-      } else {
+        console.log("Updated element:", element, "property:", key, "value:", value);
+      } else { // Handles attribute updates
       element.setAttribute(key, value);
-        console.log(element);
-        console.log(key,value);
+        console.log("Updated element:", element, "attribute:", key, "value:", value);
       }
     });
   });
 };
+
+/**
+ * Activates a specific variant by applying its configuration.
+ * It iterates through the changes defined for the variant and uses `applyUpdates` to implement them.
+ * @param {object} variations - The main variations object.
+ * @param {string} variant - The key of the variant to apply (e.g., 'control', 'test_group_1').
+ */
 const applyVariantConfig = (variations, variant) => {
   const config = variations[variant];
-  config.forEach(({ selector, updates }) => {
-    applyUpdates(selector, updates);
-  });
-  console.log(variant," activated");
+  if (config) {
+    config.forEach(({ selector, updates }) => {
+      applyUpdates(selector, updates);
+    });
+    console.log(variant, " activated");
+  } else {
+    console.warn("Variant config not found for:", variant);
+  }
 };
-// Determine and apply visibility of variants based on URL parameter or feature flag
+
+/**
+ * Determines which A/B test group to apply and activates it.
+ * Priority:
+ * 1. URL Query Parameter: Checks if the `testSlug` is present as a URL query parameter.
+ *    If found, its value is used to select the variant. This is useful for manual testing or forcing a variant.
+ *    Example: yourpage.com?YOUR_FEATURE_FLAG_KEY=test_group_1
+ * 2. PostHog Feature Flag: If no relevant URL parameter is found, it waits for PostHog feature flags to load.
+ *    It then gets the value of the feature flag corresponding to `testSlug`.
+ *    - If the flag value matches a defined variant key, that variant is applied.
+ *    - If the flag value doesn't match any variant or if the flag is not set, the 'control' group is applied by default.
+ * @param {object} variations - The main variations object.
+ * @param {string} testSlug - The feature flag key for this test.
+ */
 const evaluateTestGroup = (variations, testSlug) => {
-  let groupValue = getQueryParamByKey(testSlug);
-  if (groupValue) {
+  // Helper function to get URL query parameters (assuming it's defined elsewhere or you add it)
+  // Example:
+  // function getQueryParamByKey(key) {
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   return urlParams.get(key);
+  // }
+
+  let groupValue = getQueryParamByKey(testSlug); // Assuming getQueryParamByKey is defined globally or in a utility script
+  if (groupValue && variations.hasOwnProperty(groupValue)) {
+    console.log("Applying variant from URL parameter:", groupValue);
     applyVariantConfig(variations, groupValue);
   } else {
-    posthog.onFeatureFlags(() => {
-      let groupValue = posthog.getFeatureFlag(testSlug);
-      if (variations.hasOwnProperty(groupValue)) {
-        applyVariantConfig(variations, groupValue);
-      } else {
-        console.log("Test not started yet, showing control.");
-        applyVariantConfig(variations, 'control');
-      }
-    });
+    // Ensure PostHog is available
+    if (typeof posthog !== 'undefined' && typeof posthog.onFeatureFlags === 'function') {
+      posthog.onFeatureFlags(() => {
+        let flagValue = posthog.getFeatureFlag(testSlug);
+        if (flagValue && variations.hasOwnProperty(flagValue)) {
+          console.log("Applying variant from PostHog feature flag:", flagValue);
+          applyVariantConfig(variations, flagValue);
+        } else {
+          console.log("Test not started or flag value invalid. Applying 'control'. Flag value received:", flagValue);
+          applyVariantConfig(variations, 'control'); // Default to control if flag is not set or value is invalid
+        }
+      });
+    } else {
+      console.warn("PostHog not available or onFeatureFlags not ready. Applying 'control' by default.");
+      applyVariantConfig(variations, 'control'); // Default to control if PostHog is not ready
+    }
   }
 };
   
+// Initialize the A/B test evaluation.
 evaluateTestGroup(variations, testSlug);
 
 </script> 
