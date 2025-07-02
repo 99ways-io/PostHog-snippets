@@ -2,16 +2,6 @@
 // Variation definition
 const testSlug = 'YOUR_FEATURE_FLAG_KEY';
 
-// Validation
-if (testSlug === 'YOUR_FEATURE_FLAG_KEY') {
-  console.warn('⚠️ Feature flag key not configured. Please replace YOUR_FEATURE_FLAG_KEY with your actual flag key.');
-}
-
-// Check if PostHog is loaded
-if (typeof posthog === 'undefined') {
-  console.error('❌ PostHog not found. Make sure PostHog installation script is loaded before this script.');
-}
-
 const variations = {
   'control': [], // ALWAYS keep the control key as 'control'
   'test_group_1': [
