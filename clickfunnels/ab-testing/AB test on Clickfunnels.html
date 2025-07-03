@@ -100,20 +100,19 @@ const applyVariantConfig = (variations, variant) => {
  * @param {object} variations - The main variations object.
  * @param {string} testSlug - The feature flag key for this test.
  */
+const getQueryParamByKey = (key) => new URLSearchParams(window.location.search).get(key);
 const evaluateTestGroup = (variations, testSlug) => {
-  // Helper function to get URL query parameters (assuming it's defined elsewhere or you add it)
-  // Example:
-  // function getQueryParamByKey(key) {
-  //   const urlParams = new URLSearchParams(window.location.search);
-  //   return urlParams.get(key);
-  // }
+  // Helper function to get URL query parameters.
+  // This should be defined globally or in a utility script if not already present.
+  // For WordPress, you might already have a utility for this or use a simple implementation like below.
 
-  let groupValue = getQueryParamByKey(testSlug); // Assuming getQueryParamByKey is defined globally or in a utility script
+  let groupValue = getQueryParamByKey(testSlug);
   if (groupValue && variations.hasOwnProperty(groupValue)) {
     console.log("Applying variant from URL parameter:", groupValue);
     applyVariantConfig(variations, groupValue);
   } else {
-    // Ensure PostHog is available
+    // Ensure PostHog is available and its onFeatureFlags method is ready.
+    // This is crucial for integrating with PostHog feature flags.
     if (typeof posthog !== 'undefined' && typeof posthog.onFeatureFlags === 'function') {
       posthog.onFeatureFlags(() => {
         let flagValue = posthog.getFeatureFlag(testSlug);
@@ -122,17 +121,18 @@ const evaluateTestGroup = (variations, testSlug) => {
           applyVariantConfig(variations, flagValue);
         } else {
           console.log("Test not started or flag value invalid. Applying 'control'. Flag value received:", flagValue);
-          applyVariantConfig(variations, 'control'); // Default to control if flag is not set or value is invalid
+          applyVariantConfig(variations, 'control'); // Default to 'control' if flag is not set or value is invalid
         }
       });
     } else {
+      // Fallback if PostHog is not loaded or ready.
       console.warn("PostHog not available or onFeatureFlags not ready. Applying 'control' by default.");
-      applyVariantConfig(variations, 'control'); // Default to control if PostHog is not ready
+      applyVariantConfig(variations, 'control'); // Default to 'control'
     }
   }
 };
   
-// Initialize the A/B test evaluation.
+// Initialize the A/B test evaluation when the script runs.
 evaluateTestGroup(variations, testSlug);
 
-</script> 
+</script>
