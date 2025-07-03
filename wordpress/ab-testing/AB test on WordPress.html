@@ -100,14 +100,11 @@ const applyVariantConfig = (variations, variant) => {
  * @param {object} variations - The main variations object.
  * @param {string} testSlug - The feature flag key for this test.
  */
+const getQueryParamByKey = (key) => new URLSearchParams(window.location.search).get(key);
 const evaluateTestGroup = (variations, testSlug) => {
   // Helper function to get URL query parameters.
   // This should be defined globally or in a utility script if not already present.
   // For WordPress, you might already have a utility for this or use a simple implementation like below.
-  function getQueryParamByKey(key) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(key);
-  }
 
   let groupValue = getQueryParamByKey(testSlug);
   if (groupValue && variations.hasOwnProperty(groupValue)) {
