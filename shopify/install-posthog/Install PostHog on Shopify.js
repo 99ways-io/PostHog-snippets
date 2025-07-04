@@ -94,7 +94,7 @@ function processAndReportEvent(event) {
   // - `disable_session_recording`: true - disables session recording if not needed.
   // - `capture_pageleave`: false - disables capturing page leave events.
   // - `advanced_disable_decide`: true - potentially disables fetching feature flags, etc., on init if managed elsewhere.
-  posthog.init('YOUR_POSTHOG_PROJECT_API_KEY',{api_host:"https://us.i.posthog.com", person_profiles: 'always'});
+  posthog.init('YOUR_POSTHOG_PROJECT_API_KEY',{api_host:"https://us.i.posthog.com", person_profiles: 'always',autocapture: false, capture_pageview: false, disable_session_recording: true, capture_pageleave: false, advanced_disable_decide:true});
 
   // Shopify event data often has a nested structure, e.g., event.data.checkout, event.data.product.
   // We extract the main nested data object first.
