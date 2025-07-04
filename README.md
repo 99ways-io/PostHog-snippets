@@ -57,7 +57,6 @@ These snippets (e.g., `shopify/install-posthog/Install PostHog on Shopify`) are 
 *   **Prerequisites:**
     *   A PostHog account.
 *   **Customization:**
-    *   Replace `******************************************` with your PostHog Project API Key.
     *   Verify the `api_host` is correct for your PostHog instance (e.g., `https://us.i.posthog.com` or `https://eu.i.posthog.com` or your self-hosted domain).
 *   **Placement:** This snippet should ideally be placed in the `<head>` section of your HTML to ensure PostHog loads early.
 
