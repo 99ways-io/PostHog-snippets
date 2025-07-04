@@ -27,7 +27,7 @@ This structure helps in easily locating snippets based on the platform and their
 1.  **Find the snippet:** Navigate to the appropriate directory based on the platform and functionality you need. For example, to find an A/B testing snippet for Shopify, look in `shopify/ab-testing/`.
 2.  **Copy the code:** Open the file and copy the entire code snippet.
 3.  **Customize (if necessary):**
-    *   Many snippets require you to replace placeholder values. These are usually indicated with asterisks (e.g., `******************************************`) or descriptive terms (e.g., `YOUR_FEATURE_FLAG_KEY`, `#original-element`).
+    *   Many snippets require you to replace placeholder values. These are usually indicated with descriptive terms (e.g., `YOUR_FEATURE_FLAG_KEY`, `#original-element`).
     *   Review the comments within the snippet for specific instructions on what to customize.
 4.  **Embed the snippet:** Paste the customized snippet into the appropriate place in your website's code. This is typically within `<script>` tags in the `<head>` or before the closing `</body>` tag, but refer to your platform's documentation for the best placement.
     *   **Shopify:** You can add snippets to your `theme.liquid` file or use Shopify's script tag API.
