@@ -1,6 +1,6 @@
 <script>
 // Variation definition
-const testSlug = '001-about-page-Heading-test';
+const testSlug = 'YOUR_FEATURE_FLAG_KEY';
 
 const variations = {
   'control': [{
@@ -18,7 +18,7 @@ const variations = {
 ], // ALWAYS keep the control key as 'control'
   'test_group_1': [
     {
-      selector: '#control-group',
+      selector: '#original-element',
       updates: {style: {display: 'none'}}
     },
     {
@@ -32,7 +32,7 @@ const variations = {
   ],
   'test_group_2': [
     {
-      selector: '#control-group',
+      selector: '#original-element',
       updates: {style: {display: 'none'}}
     },
     {
@@ -109,7 +109,7 @@ const evaluateTestGroup = (variations, testSlug) => {
   if (!groupValue) {
     posthog.onFeatureFlags(() => {
       const flagValue = posthog.getFeatureFlag(testSlug);
-      
+
       if (variations.hasOwnProperty(flagValue)) {
         groupValue = flagValue;
         applyVariantConfig(groupValue);
@@ -127,5 +127,5 @@ const evaluateTestGroup = (variations, testSlug) => {
 
 
  evaluateTestGroup(variations, testSlug);
-  
+
 </script>

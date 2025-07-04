@@ -2,10 +2,10 @@
 // User inputs should be easily modified as per the A/B test requirements
 const variationElements = {
   control: [], // ALWAYS keep the control key as 'control'
-  test_group_1: ["**TG1_CSS_ID**"], // Should match feature flag Variant keys. by default: 'test'
-  test_group_2: ["**TG2_CSS_ID**"]
+  test_group_1: ["variant-one-element"], // Should match feature flag Variant keys. by default: 'test'
+  test_group_2: ["variant-two-element"]
 };
-const testSlug = "**FEATURE FLAG KEY**"; // get feature flag key from posthog
+const testSlug = "YOUR_FEATURE_FLAG_KEY"; // get feature flag key from posthog
 
 // Ignore the next lines. That was all :)
 

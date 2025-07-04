@@ -1,8 +1,13 @@
 # PostHog Snippets
 
-This repository contains a collection of code snippets to help you integrate PostHog analytics and implement A/B testing on various platforms. PostHog is an open-source product analytics platform that helps you understand your users and build better products.
+This repository contains a collection of production-ready code snippets to help you integrate PostHog analytics and implement A/B testing on various platforms. PostHog is an open-source product analytics platform that helps you understand your users and build better products.
 
-These snippets are designed to be easily customizable and can be adapted to fit your specific needs.
+## Quick Start
+
+1. **Install PostHog**: Copy the installation snippet for your platform
+2. **Configure**: Replace `YOUR_POSTHOG_PROJECT_API_KEY` with your actual API key
+3. **Set up A/B testing**: Copy the A/B testing snippet and configure your feature flag
+4. **Test**: Use the interactive demo to validate your setup
 
 ## Repository Structure
 
@@ -22,7 +27,7 @@ This structure helps in easily locating snippets based on the platform and their
 1.  **Find the snippet:** Navigate to the appropriate directory based on the platform and functionality you need. For example, to find an A/B testing snippet for Shopify, look in `shopify/ab-testing/`.
 2.  **Copy the code:** Open the file and copy the entire code snippet.
 3.  **Customize (if necessary):**
-    *   Many snippets require you to replace placeholder values. These are usually indicated with asterisks (e.g., `******************************************`) or descriptive terms in uppercase (e.g., `**FEATURE FLAG KEY**`, `**CONTROL_CSS_ID**`).
+    *   Many snippets require you to replace placeholder values. These are usually indicated with descriptive terms (e.g., `YOUR_FEATURE_FLAG_KEY`, `#original-element`).
     *   Review the comments within the snippet for specific instructions on what to customize.
 4.  **Embed the snippet:** Paste the customized snippet into the appropriate place in your website's code. This is typically within `<script>` tags in the `<head>` or before the closing `</body>` tag, but refer to your platform's documentation for the best placement.
     *   **Shopify:** You can add snippets to your `theme.liquid` file or use Shopify's script tag API.
@@ -37,11 +42,11 @@ These snippets (e.g., `clickfunnels/ab-testing/AB test on Clickfunnels.html`) al
     *   A PostHog account with feature flags set up for your A/B test variations.
     *   The PostHog JavaScript snippet already installed on your page.
 *   **Customization:**
-    *   `testSlug`: Replace `**FEATURE FLAG KEY**` with the actual key of your feature flag in PostHog.
+    *   `testSlug`: Replace `YOUR_FEATURE_FLAG_KEY` with the actual key of your feature flag in PostHog.
     *   `variations`:
         *   The `control` key should generally be left as is.
         *   For each test group (e.g., `test_group_1`, `test_group_2`):
-            *   `selector`: Replace `**CONTROL_CSS_ID**`, `**TG1_CSS_ID**`, etc., with the actual CSS selectors (e.g., `#my-element`, `.my-class`) of the elements you want to modify for that variation.
+            *   `selector`: Replace `#original-element`, `#variant-one-element`, etc., with the actual CSS selectors (e.g., `#my-element`, `.my-class`) of the elements you want to modify for that variation.
             *   `updates`: Modify the `style`, `innerHTML`, `href`, etc., attributes of the selected elements as needed for your test. The example shows hiding/showing elements, but you can change other properties too.
 *   **How it works:** The script checks if a URL parameter matching the `testSlug` is present. If so, it applies that variation. Otherwise, it waits for PostHog feature flags to load and applies the variation determined by the flag.
 
@@ -52,7 +57,6 @@ These snippets (e.g., `shopify/install-posthog/Install PostHog on Shopify`) are 
 *   **Prerequisites:**
     *   A PostHog account.
 *   **Customization:**
-    *   Replace `******************************************` with your PostHog Project API Key.
     *   Verify the `api_host` is correct for your PostHog instance (e.g., `https://us.i.posthog.com` or `https://eu.i.posthog.com` or your self-hosted domain).
 *   **Placement:** This snippet should ideally be placed in the `<head>` section of your HTML to ensure PostHog loads early.
 
