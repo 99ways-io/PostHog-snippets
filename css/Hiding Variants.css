@@ -1,3 +1,12 @@
+/*
+  This CSS rule is used to hide a specific element with the ID 'variant-element-to-hide'.
+  This is often used in A/B testing scenarios where:
+  - This element might be part of an original page version that needs to be hidden when a variant is active.
+  - Or, this element itself is a variant that should be hidden by default and only shown when its
+    corresponding test group is activated by the A/B testing script.
+  The `!important` flag is used to ensure this style overrides other display properties
+  that might be applied to the element, making sure it remains hidden as intended.
+*/
 #variant-element-to-hide {
   display: none !important;
 }
