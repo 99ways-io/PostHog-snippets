@@ -9,10 +9,6 @@ This repository contains a collection of production-ready code snippets to help 
 3. **Set up A/B testing**: Copy the A/B testing snippet and configure your feature flag
 4. **Test**: Use the interactive demo to validate your setup
 
-## Demo
-
-Check out the [interactive demo](demo/interactive-demo.html) to test configurations and see how the snippets work before implementing them on your site.
-
 ## Repository Structure
 
 The snippets in this repository are organized into a hierarchical directory structure:
