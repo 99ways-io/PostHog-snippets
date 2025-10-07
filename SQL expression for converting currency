@@ -1,0 +1,8 @@
+sum(
+  convertCurrency(
+    properties.{your_currency_field},
+    'YOUR_TARGET_CURRENCY',
+    properties.{your_amount_field},
+    _toDate(timestamp)          -- use the event date for historical rates
+  )
+)
