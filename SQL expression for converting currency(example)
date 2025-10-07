@@ -1,0 +1,8 @@
+sum(
+  convertCurrency(
+    properties.totalPrice.currencyCode,
+    'USD',
+    properties.totalPrice.amount,
+    _toDate(timestamp)
+  )
+)
