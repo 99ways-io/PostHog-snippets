@@ -1,0 +1,12 @@
+let ip := event.properties?.$ip
+
+
+let returnEvent := event
+returnEvent.properties := returnEvent.properties ?? {}
+returnEvent.properties.$set := returnEvent.properties.$set ?? {}
+returnEvent.properties.$set_once := returnEvent.properties.$set_once ?? {}
+
+returnEvent.properties.$set.$ip := ip
+returnEvent.properties.$set_once.$initial_ip := ip
+
+return returnEvent
