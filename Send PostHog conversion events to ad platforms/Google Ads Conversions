@@ -1,0 +1,80 @@
+let body := {
+    'conversions': [
+        {
+            'gclid': inputs.gclid,
+            'conversion_action': f'customers/{splitByString('/', inputs.customerId)[1]}/conversionActions/{inputs.conversionActionId}',
+            'conversion_date_time': inputs.conversionDateTime,
+            'consent': {'ad_user_data':'GRANTED', 'ad_personalization':'GRANTED'}
+        }
+    ],
+    'partialFailure': true
+}
+
+if (not empty(inputs.conversionValue)) {
+    body.conversions[1].conversion_value := inputs.conversionValue
+}
+if (not empty(inputs.currencyCode)) {
+    body.conversions[1].currency_code := inputs.currencyCode
+}
+if (not empty(inputs.orderId)) {
+    body.conversions[1].order_id := inputs.orderId
+}
+
+if (not empty(inputs.user_ip_address)) {
+    body.conversions[1].user_ip_address := inputs.user_ip_address
+}
+
+// Only build user_identifiers if we have at least one piece of user data
+if (
+    not empty(inputs.hashedEmail)
+    or not empty(inputs.hashedFirstName)
+    or not empty(inputs.hashedLastName)
+) {
+    let userIdentifiers := []
+
+    // hashed_email identifier
+    if (not empty(inputs.hashedEmail)) {
+        userIdentifiers := arrayPushBack(userIdentifiers, {
+            'hashed_email': inputs.hashedEmail
+        })
+    }
+
+    // address_info identifier (first/last name)
+    if (not empty(inputs.hashedFirstName) or not empty(inputs.hashedLastName)) {
+        let addressInfo := {}
+
+        if (not empty(inputs.hashedFirstName)) {
+            addressInfo.hashed_first_name := inputs.hashedFirstName
+        }
+        if (not empty(inputs.hashedLastName)) {
+            addressInfo.hashed_last_name := inputs.hashedLastName
+        }
+
+        userIdentifiers := arrayPushBack(userIdentifiers, {
+            'address_info': addressInfo
+        })
+    }
+
+    // Only set the field if we actually have at least one identifier
+    if (not empty(userIdentifiers)) {
+        body.conversions[1].user_identifiers := userIdentifiers
+    }
+}
+
+print(body)
+
+let res := fetch(f'https://googleads.googleapis.com/v21/customers/{splitByString('/', inputs.customerId)[1]}:uploadClickConversions', {
+    'method': 'POST',
+    'headers': {
+        'Authorization': f'Bearer {inputs.oauth.access_token}',
+        'Content-Type': 'application/json',
+        'login-customer-id': splitByString('/', inputs.customerId)[2]
+    },
+    'body': body
+})
+
+if (res.status >= 400) {
+    throw Error(f'Error from googleads.googleapis.com (status {res.status}): {res.body}')
+} else if (not empty(res.body.partialFailureError)) {
+    throw Error(f'Error from googleads.googleapis.com (status {res.status}): {res.body.partialFailureError.message}')
+}
