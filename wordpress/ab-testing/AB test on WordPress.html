@@ -22,9 +22,10 @@
 <script>
 window.runExperiment('001-about-page-heading-test', {
   isEligible: async () => {
-    // A URL preview reads no flag, so only measured visits wait for consent.
-    if (!new URLSearchParams(location.search).has('001-about-page-heading-test')) {
+    // A URL preview of a variant reads no flag; every other visit waits for consent.
+    if (!new URLSearchParams(location.search).get('001-about-page-heading-test')) {
       await window.analyticsConsent
+      if (window.posthog?.has_opted_out_capturing?.()) return false
     }
     return ['#experiment-control', '#experiment-tg1', '#experiment-tg2'].every(selector =>
       document.querySelectorAll(selector).length === 1
