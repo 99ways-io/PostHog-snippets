@@ -1,0 +1,22 @@
+<!--
+  Optional: hold PostHog until the visitor agrees to analytics (WordPress)
+  Guide: https://99ways.io/how-we-installed-posthog-on-wordpress/#step-2-add-posthog-snippet-to-my-website
+  Add this after the PostHog snippet, with opt_out_capturing_by_default and
+  opt_out_persistence_by_default uncommented there. Call onAnalyticsConsentChange(true or false)
+  from your consent manager's consent-change callback, and apply the saved choice on each page.
+  window.analyticsConsent stays pending until capture is allowed; the A/B test snippet waits for it.
+-->
+<script>
+window.analyticsConsent = new Promise(resolve => {
+  window.allowAnalytics = resolve;
+});
+
+function onAnalyticsConsentChange(hasConsented) {
+  if (hasConsented) {
+    posthog.opt_in_capturing({ captureEventName: false });
+    window.allowAnalytics();
+  } else {
+    posthog.opt_out_capturing();
+  }
+}
+</script>
