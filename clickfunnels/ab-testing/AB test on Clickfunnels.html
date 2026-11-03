@@ -1,138 +1,61 @@
+<!--
+  A/B test a ClickFunnels page with PostHog
+  Guide: https://99ways.io/how-to-setup-posthog-a-b-test-on-clickfunnels/
+  1. Build the variant elements on the page and hide them with the CSS below.
+  2. Paste the script after the PostHog snippet; the flag key must match your PostHog experiment.
+  3. Preview each variant by adding ?<flag-key>=<variant> to the page URL, for example:
+     https://example.com/optin/?001-optin-page-heading-test=control
+     https://example.com/optin/?001-optin-page-heading-test=test_group_1
+     https://example.com/optin/?001-optin-page-heading-test=test_group_2
+  The runner is posthog-page-experiments (https://github.com/99ways-io/posthog-page-experiments):
+  it checks that the page can show the change before recording an exposure, applies the assigned
+  variant with !important styles, and falls back to control. isEligible waits for
+  window.analyticsConsent, which the install snippets' consent code defines.
+-->
+<style>
+#variant-one-element,
+#variant-two-element {
+  display: none !important;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@99ways/posthog-page-experiments@0.2.0/dist/posthog-page-experiments.min.js"></script>
 <script>
-// --- Configuration for A/B Testing ---
-
-// Variation definition
-// The `testSlug` is the key used to identify this specific A/B test or feature flag in PostHog.
-// Replace 'YOUR_FEATURE_FLAG_KEY' with the actual key from your PostHog project.
-const testSlug = 'YOUR_FEATURE_FLAG_KEY';
-
-// The `variations` object defines the different versions of the page for the A/B test.
-// Each key in this object represents a variant group (e.g., 'control', 'test_group_1').
-// - 'control': This is the original version of the page. It's crucial to keep this key named 'control'.
-//   It typically has an empty array, meaning no changes are applied.
-// - Other keys (e.g., 'test_group_1', 'test_group_2'): These represent the different test variations.
-//   Each variation is an array of objects, where each object specifies:
-//     - `selector`: A CSS selector for the HTML element(s) to be modified.
-//     - `updates`: An object describing the changes to apply to the selected element(s).
-//       - `style`: An object for CSS style changes (e.g., `display: 'none'` to hide, `display: 'block'` to show).
-//       - Other properties can be set directly (e.g., `innerText: 'New Text'`, `innerHTML: '<span>New HTML</span>'`).
-//       - Attributes can be set using `setAttribute` (e.g., `href: 'new-link'`).
-const variations = {
-  'control': [], // ALWAYS keep the control key as 'control'
-  'test_group_1': [
-    {
-      selector: '#original-element', // Example: Hide the original element
-      updates: {style: {display: 'none'}}
-    },
-    {
-      selector: '#variant-one-element', // Example: Show the first variant element
-      updates: {style: {display: 'block'}}
+window.runExperiment('001-optin-page-heading-test', {
+  isEligible: async () => {
+    // A URL preview of a variant reads no flag; every other visit waits for consent.
+    if (!new URLSearchParams(location.search).get('001-optin-page-heading-test')) {
+      await window.analyticsConsent
+      if (window.posthog?.has_opted_out_capturing?.()) return false
     }
-  ],
-  'test_group_2': [
-    {
-      selector: '#original-element', // Example: Hide the original element
-      updates: {style: {display: 'none'}}
-    },
-    {
-      selector: '#variant-two-element', // Example: Show the second variant element
-      updates: {style: {display: 'block'}}
-    }
-  ]
-};
+    return ['#original-element', '#variant-one-element', '#variant-two-element'].every(selector =>
+      document.querySelectorAll(selector).length === 1
+    )
+  },
 
+  variants: {
+    control: [],
 
-// --- A/B Testing Utility Functions ---
+    test_group_1: [
+      {
+        selector: '#original-element',
+        updates: { style: { display: 'none' } },
+      },
+      {
+        selector: '#variant-one-element',
+        updates: { style: { display: 'block' } },
+      },
+    ],
 
-/**
- * Applies specified updates to all DOM elements matching a given CSS selector.
- * @param {string} selector - The CSS selector for the target element(s).
- * @param {object} updates - An object defining the modifications to apply.
- *                           Can include style changes, innerText, innerHTML, or attributes.
- */
-const applyUpdates = (selector, updates) => {
-  const elements = document.querySelectorAll(selector);
-  elements.forEach((element) => {
-    Object.entries(updates).forEach(([key, value]) => {
-      if (typeof value === 'object' && !Array.isArray(value)) { // Handles nested objects like 'style'
-        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-          element[key][nestedKey] = nestedValue;
-        });
-      } else if (['innerText','innerHTML'].includes(key)) { // Handles direct text/HTML updates
-        element[key]= value;
-        console.log("Updated element:", element, "property:", key, "value:", value);
-      } else { // Handles attribute updates
-      element.setAttribute(key, value);
-        console.log("Updated element:", element, "attribute:", key, "value:", value);
-      }
-    });
-  });
-};
-
-/**
- * Activates a specific variant by applying its configuration.
- * It iterates through the changes defined for the variant and uses `applyUpdates` to implement them.
- * @param {object} variations - The main variations object.
- * @param {string} variant - The key of the variant to apply (e.g., 'control', 'test_group_1').
- */
-const applyVariantConfig = (variations, variant) => {
-  const config = variations[variant];
-  if (config) {
-    config.forEach(({ selector, updates }) => {
-      applyUpdates(selector, updates);
-    });
-    console.log(variant, " activated");
-  } else {
-    console.warn("Variant config not found for:", variant);
-  }
-};
-
-/**
- * Determines which A/B test group to apply and activates it.
- * Priority:
- * 1. URL Query Parameter: Checks if the `testSlug` is present as a URL query parameter.
- *    If found, its value is used to select the variant. This is useful for manual testing or forcing a variant.
- *    Example: yourpage.com?YOUR_FEATURE_FLAG_KEY=test_group_1
- * 2. PostHog Feature Flag: If no relevant URL parameter is found, it waits for PostHog feature flags to load.
- *    It then gets the value of the feature flag corresponding to `testSlug`.
- *    - If the flag value matches a defined variant key, that variant is applied.
- *    - If the flag value doesn't match any variant or if the flag is not set, the 'control' group is applied by default.
- * @param {object} variations - The main variations object.
- * @param {string} testSlug - The feature flag key for this test.
- */
-const getQueryParamByKey = (key) => new URLSearchParams(window.location.search).get(key);
-const evaluateTestGroup = (variations, testSlug) => {
-  // Helper function to get URL query parameters.
-  // This should be defined globally or in a utility script if not already present.
-  // For WordPress, you might already have a utility for this or use a simple implementation like below.
-
-  let groupValue = getQueryParamByKey(testSlug);
-  if (groupValue && variations.hasOwnProperty(groupValue)) {
-    console.log("Applying variant from URL parameter:", groupValue);
-    applyVariantConfig(variations, groupValue);
-  } else {
-    // Ensure PostHog is available and its onFeatureFlags method is ready.
-    // This is crucial for integrating with PostHog feature flags.
-    if (typeof posthog !== 'undefined' && typeof posthog.onFeatureFlags === 'function') {
-      posthog.onFeatureFlags(() => {
-        let flagValue = posthog.getFeatureFlag(testSlug);
-        if (flagValue && variations.hasOwnProperty(flagValue)) {
-          console.log("Applying variant from PostHog feature flag:", flagValue);
-          applyVariantConfig(variations, flagValue);
-        } else {
-          console.log("Test not started or flag value invalid. Applying 'control'. Flag value received:", flagValue);
-          applyVariantConfig(variations, 'control'); // Default to 'control' if flag is not set or value is invalid
-        }
-      });
-    } else {
-      // Fallback if PostHog is not loaded or ready.
-      console.warn("PostHog not available or onFeatureFlags not ready. Applying 'control' by default.");
-      applyVariantConfig(variations, 'control'); // Default to 'control'
-    }
-  }
-};
-  
-// Initialize the A/B test evaluation when the script runs.
-evaluateTestGroup(variations, testSlug);
-
+    test_group_2: [
+      {
+        selector: '#original-element',
+        updates: { style: { display: 'none' } },
+      },
+      {
+        selector: '#variant-two-element',
+        updates: { style: { display: 'block' } },
+      },
+    ],
+  },
+}).catch(error => console.error('Experiment error:', error))
 </script>

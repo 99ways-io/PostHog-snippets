@@ -1,0 +1,71 @@
+<!--
+  Install PostHog on a Shopify storefront: the theme snippet
+  Guide: https://99ways.io/how-we-installed-posthog-on-shopify-and-captured-all-events/
+  Paste before </head> in layout/theme.liquid, on an unpublished copy of the live theme first.
+  It starts PostHog only after Shopify's Customer Privacy API allows analytics, and writes the
+  visitor's PostHog ID to the ph_storefront_id cookie, which the custom pixel reads so checkout
+  events join the same visitor.
+  The loader below is PostHog's snippet loader; prefer the one your project shows. Replace
+  YOUR_POSTHOG_PROJECT_TOKEN, set your region's host, and add the `defaults` date from your
+  project's snippet to posthog.init.
+-->
+<script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+// Keep the loader from your project snippet above this code.
+window.analyticsConsent = new Promise(resolve => {
+  window.allowAnalytics = resolve;
+});
+
+window.Shopify.loadFeatures([
+  { name: 'consent-tracking-api', version: '0.2' },
+], error => {
+  if (error) return;
+  const privacy = window.Shopify.customerPrivacy;
+  let client;
+  let started = false;
+  let pageviewSent = false;
+
+  window.refreshPostHogBridge = function () {
+    if (!client || !privacy.analyticsProcessingAllowed()
+        || client.has_opted_out_capturing()) return;
+    document.cookie = 'ph_storefront_id='
+      + encodeURIComponent(client.get_distinct_id())
+      + '; Path=/; SameSite=Lax; Secure';
+  };
+
+  function syncConsent() {
+    if (!privacy.analyticsProcessingAllowed()) {
+      if (client) client.opt_out_capturing();
+      document.cookie = 'ph_storefront_id=; Max-Age=0; Path=/; SameSite=Lax; Secure';
+      return;
+    }
+    if (!started) {
+      started = true;
+      posthog.init('YOUR_POSTHOG_PROJECT_TOKEN', {
+        api_host: 'https://eu.i.posthog.com', // Use your project's host.
+        // Retain the defaults option from your copied snippet here.
+        person_profiles: 'identified_only',
+        opt_out_capturing_by_default: true,
+        opt_out_persistence_by_default: true,
+        capture_pageview: false,
+        loaded: function (ph) {
+          client = ph;
+          syncConsent();
+        },
+      });
+      return;
+    }
+    if (!client) return;
+    if (client.has_opted_out_capturing()) client.opt_in_capturing();
+    window.allowAnalytics();
+    window.refreshPostHogBridge();
+    if (!pageviewSent) {
+      client.capture('$pageview');
+      pageviewSent = true;
+    }
+  }
+
+  document.addEventListener('visitorConsentCollected', syncConsent);
+  syncConsent();
+});
+</script>
